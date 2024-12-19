@@ -2,6 +2,7 @@ import pandas as pd
 from flask import Flask, render_template, request
 import pickle
 import numpy as np
+import os
 
 app = Flask(__name__)
 data = pd.read_csv('Cleaned_data.csv')
@@ -51,4 +52,5 @@ def calculate_emi():
     return formatted_emi
 
 if __name__ == '__main__':
-    app.run()
+    # Ensure the app is compatible with deployment environments
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
