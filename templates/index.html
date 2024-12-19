@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Property Price Predictor</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <style>
+      .slider-label {
+        display: flex;
+        justify-content: space-between;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card my-5 mx-auto shadow-lg">
+        <div class="card-header text-center">
+          <h1 class="card-title">Property Price Predictor</h1>
+        </div>
+        <div class="card-body">
+          <form id="predictForm" method="post" accept-charset="utf-8">
+            <div class="mb-3">
+              <label for="location" class="form-label"
+                ><b>Select The Location:</b></label
+              >
+              <select
+                class="form-select"
+                id="location"
+                name="location"
+                required
+              >
+                {% for location in locations %}
+                <option value="{{ location }}">{{ location }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="bhk" class="form-label"><b>Enter BHK:</b></label>
+              <input
+                type="number"
+                class="form-control"
+                id="bhk"
+                name="bhk"
+                placeholder="Enter BHK"
+                min="1"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="bath" class="form-label"
+                ><b>Enter Number of Bathrooms:</b></label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="bath"
+                name="bath"
+                placeholder="Enter Bathrooms"
+                min="1"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="total_sqft" class="form-label"
+                ><b>Enter Square Feet:</b></label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="total_sqft"
+                name="total_sqft"
+                placeholder="Enter Square Feet"
+                min="1"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+              Predict Price
+            </button>
+          </form>
+          <br />
+          <div class="text-center">
+            <h3><span id="prediction"></span></h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- Finance This Property box -->
+      <div
+        id="financeBox"
+        class="card my-5 mx-auto shadow-lg"
+        style="display: none"
+      >
+        <div class="card-header text-center">
+          <h1 class="card-title">FINANCE THIS PROPERTY</h1>
+        </div>
+        <div class="card-body">
+          <form id="financeForm">
+            <div class="mb-3">
+              <label for="interest_rate" class="form-label"
+                ><b>Loan Interest Rate (%):</b></label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="interest_rate"
+                name="interest_rate"
+                placeholder="Enter Interest Rate"
+                step="0.01"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="years" class="form-label"
+                ><b>Number of Years:</b></label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="years"
+                name="years"
+                placeholder="Enter Loan Duration (Years)"
+                min="1"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-success w-100">
+              Calculate Monthly Payment
+            </button>
+          </form>
+          <br />
+          <div class="text-center">
+            <h3><span id="emi"></span></h3>
+            <p id="rentPrompt" style="display: none">
+              Would you like to put this property on rent?
+              <button id="rentYes" class="btn btn-primary mx-2">Yes</button>
+              <button id="rentNo" class="btn btn-secondary mx-2">No</button>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- New Rent Calculation box (initially hidden) -->
+      <div
+        id="rentBox"
+        class="card my-5 mx-auto shadow-lg"
+        style="display: none"
+      >
+        <div class="card-header text-center">
+          <h1 class="card-title">RENT CALCULATION</h1>
+        </div>
+        <div class="card-body">
+          <form id="rentForm">
+            <div class="mb-3">
+              <label for="num_tenants" class="form-label"
+                ><b>Number of Teenants:</b></label
+              >
+              <div class="slider-label">
+                <input
+                  type="range"
+                  class="form-range"
+                  id="num_tenants"
+                  name="num_tenants"
+                  min="0"
+                  value="0"
+                  step="1"
+                  max="10"
+                />
+                <span id="num_tenants_label">0</span>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="profit_percentage" class="form-label"
+                ><b>Expected Profit (%):</b></label
+              >
+              <div class="slider-label">
+                <input
+                  type="range"
+                  class="form-range"
+                  id="profit_percentage"
+                  name="profit_percentage"
+                  min="0"
+                  max="100"
+                  value="0"
+                  step="0.01"
+                />
+                <span id="profit_percentage_label">0</span>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+              Calculate Tenant Charge
+            </button>
+          </form>
+          <br />
+          <div class="text-center">
+            <h3><span id="tenant_charge"></span></h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let predictedPrice = 0;
+      let emi = 0;
+      let bhk = 0;
+
+      document
+        .getElementById("predictForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault(); // Prevent default form submission
+
+          var fd = new FormData(this);
+
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", "/predict", true);
+          document.getElementById("prediction").innerHTML =
+            "Wait Predicting Price!.....";
+
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+              document.getElementById("prediction").innerHTML =
+                "Prediction: ₹" + xhr.responseText;
+              predictedPrice = parseFloat(xhr.responseText.replace(/,/g, "")); // Save the predicted price
+              bhk = parseInt(document.getElementById("bhk").value); // Get the BHK value
+              document.getElementById("financeBox").style.display = "block"; // Show the finance box
+
+              // Update the max for the tenants slider here
+              const maxTenants = bhk * 2; // Set max to 2 times the BHK value
+              document
+                .getElementById("num_tenants")
+                .setAttribute("max", maxTenants);
+            }
+          };
+
+          xhr.send(fd);
+        });
+
+      // Handle BHK input change to update max tenants
+      document.getElementById("bhk").addEventListener("input", function () {
+        const bhkValue = parseInt(this.value);
+        if (!isNaN(bhkValue)) {
+          const maxTenants = bhkValue * 2; // Set max to 2 times the BHK value
+          document
+            .getElementById("num_tenants")
+            .setAttribute("max", maxTenants);
+          // Also update the slider to ensure it doesn't exceed the new max
+          const currentValue = parseInt(
+            document.getElementById("num_tenants").value
+          );
+          if (currentValue > maxTenants) {
+            document.getElementById("num_tenants").value = maxTenants;
+            document.getElementById("num_tenants_label").innerText = maxTenants;
+          }
+        }
+      });
+
+      // Handle finance form submission
+      document
+        .getElementById("financeForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          const fd = new FormData(this);
+          fd.append("predicted_price", predictedPrice); // Add the predicted price to the form data
+
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", "/calculate_emi", true);
+
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+              emi = parseFloat(xhr.responseText.replace(/,/g, "")); // Save the EMI value
+              document.getElementById("emi").innerHTML =
+                "Monthly Payment: ₹" + xhr.responseText;
+              document.getElementById("rentPrompt").style.display = "block"; // Show the rent prompt
+            }
+          };
+
+          xhr.send(fd);
+        });
+
+      // Handle rent prompt button clicks
+      document.getElementById("rentYes").addEventListener("click", function () {
+        document.getElementById("rentBox").style.display = "block"; // Show the rent box
+        document.getElementById("rentPrompt").style.display = "none"; // Hide the rent prompt
+      });
+
+      document.getElementById("rentNo").addEventListener("click", function () {
+        document.getElementById("rentPrompt").style.display = "none"; // Hide the rent prompt
+        document.getElementById("rentBox").style.display = "none"; // Ensure the rent box is hidden
+      });
+
+      // Update slider labels
+      document
+        .getElementById("num_tenants")
+        .addEventListener("input", function () {
+          document.getElementById("num_tenants_label").innerText = this.value;
+        });
+
+      document
+        .getElementById("profit_percentage")
+        .addEventListener("input", function () {
+          document.getElementById("profit_percentage_label").innerText =
+            this.value;
+        });
+
+      // Handle rent form submission
+      document
+        .getElementById("rentForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          const numTenants = parseInt(
+            document.getElementById("num_tenants").value
+          );
+          const profitPercentage =
+            parseFloat(document.getElementById("profit_percentage").value) /
+            100;
+
+          // Calculate the total required revenue
+          const totalRevenue = emi * (1 + profitPercentage);
+
+          // Calculate charge per tenant
+          const tenantCharge = numTenants > 0 ? totalRevenue / numTenants : 0;
+
+          document.getElementById("tenant_charge").innerHTML =
+            "Charge per Tenant: ₹" + tenantCharge.toFixed(2);
+        });
+    </script>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>

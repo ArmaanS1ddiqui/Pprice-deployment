@@ -1,0 +1,101 @@
+/* styles.css */
+
+body {
+  background-color: #121212; /* Dark background color */
+  color: #e0e0e0; /* Light gray text */
+  font-family: Arial, sans-serif;
+}
+
+.card {
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #1f1f1f; /* Dark gray card background */
+}
+
+.card-header {
+  background-color: #1c1c1c; /* Even darker gray for header */
+  color: #4caf50; /* Green text */
+  padding: 20px;
+  border-bottom: 2px solid #4caf50; /* Green bottom border */
+}
+
+.card-title {
+  margin: 0;
+}
+
+.card-body {
+  padding: 30px;
+}
+
+.btn-primary {
+  background-color: #4caf50; /* Green button background */
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #388e3c; /* Darker green on hover */
+}
+
+.btn-secondary {
+  background-color: #6c757d; /* Gray button background */
+  border: none;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268; /* Darker gray on hover */
+}
+
+.btn-success {
+  background-color: #28a745; /* Green button background */
+  border: none;
+}
+
+.btn-success:hover {
+  background-color: #218838; /* Darker green on hover */
+}
+
+.form-control, .form-select {
+  border-radius: 5px;
+  border: 1px solid #4caf50; /* Green border */
+  background-color: #1f1f1f; /* Dark gray background for inputs */
+  color: #e0e0e0; /* Light gray text in inputs */
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #66bb6a; /* Lighter green on focus */
+  box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25); /* Green shadow on focus */
+}
+
+.form-label {
+  color: #e0e0e0; /* Light gray labels */
+  font-weight: bold;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.shadow-lg {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); /* Darker shadow for better contrast */
+}
+
+#prediction {
+  color: #4caf50; /* Green color for prediction text */
+}
+
+#emi {
+  color: #4caf50; /* Green color for monthly payment text */
+}
+
+#rentPrompt{
+  color: #4caf50;
+}
+
+.slider-label span {
+  color: green;
+  font-weight: bold;
+}
+
+#tenant_charge{
+  color: #4caf50;
+}
